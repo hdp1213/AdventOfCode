@@ -1,4 +1,4 @@
-package main
+package day01
 
 
 import (
@@ -7,10 +7,8 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"github.com/hdp1213/AdventOfCode/2019/utils"
 )
-
-
-// const day = 1
 
 
 func fuelRequiredForMass(mass int) int {
@@ -58,9 +56,10 @@ func readIntegers(r io.Reader) ([]int, error) {
 	return result, scanner.Err()
 }
 
-/*
-func main() {
-	inputFile, err := getInput(day)
+// Solve solves both parts of the problem
+func Solve() {
+	day := 1
+	inputFile, err := utils.GetInput(day)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "bad things happened")
 		return
@@ -81,4 +80,3 @@ func main() {
 	fmt.Printf("Fuel for only modules:   %d\n", fuelForModules)
 	fmt.Printf("Fuel for modules + fuel: %d\n", totalFuel)
 }
-*/

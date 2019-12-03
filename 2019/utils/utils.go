@@ -1,4 +1,4 @@
-package main
+package utils
 
 
 import (
@@ -16,7 +16,7 @@ type secrets struct {
 	VerificationCode string `json:"verification-code"`
 }
 
-const baseUrl = "https://adventofcode.com/2019/day/%d/input"
+const baseURL = "https://adventofcode.com/2019/day/%d/input"
 const inputDir = "input"
 
 
@@ -36,7 +36,8 @@ func loadSecretFile(filename string) (*secrets, error) {
 }
 
 
-func getInput(day int) (string, error) {
+// GetInput downloads the input file for a given day
+func GetInput(day int) (string, error) {
 	if _, err := os.Stat(inputDir); os.IsNotExist(err) {
 		os.Mkdir(inputDir, os.ModePerm)
 	}
@@ -54,7 +55,7 @@ func getInput(day int) (string, error) {
 
 	client := new(http.Client)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf(baseUrl, day), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf(baseURL, day), nil)
 	if err != nil {
 		return "", err
 	}
