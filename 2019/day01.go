@@ -13,10 +13,25 @@ import (
 const day = 1
 
 
-func fuelRequiredForMass(bah int) int {
-	return (bah / 3) - 2
+func fuelRequiredForMass(mass int) int {
+	return (mass / 3) - 2
 }
 
+func fuelRequiredForMassAndFuel(mass int) int {
+	fuel := fuelRequiredForMass(mass)
+	if fuel < 0 {
+		return 0
+	}
+	return fuel + fuelRequiredForMassAndFuel(fuel)
+}
+
+func fuelRequiredForEverything(moduleMasses []int) int {
+	totalFuel := 0
+	for _, moduleMass := range moduleMasses {
+		totalFuel += fuelRequiredForMassAndFuel(moduleMass)
+	}
+	return totalFuel
+}
 
 func readIntegers(r io.Reader) ([]int, error) {
 	scanner := bufio.NewScanner(r)
@@ -51,13 +66,8 @@ func main() {
 
 	defer file.Close()
 
-	masses, err := readIntegers(file)
-
-	total := 0
-	for _, mass := range masses {
-		fuel := fuelRequiredForMass(mass)
-		total += fuel
-	}
+	moduleMasses, err := readIntegers(file)
+	total := fuelRequiredForEverything(moduleMasses)
 
 	fmt.Println(total)
 }
