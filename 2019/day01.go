@@ -40,11 +40,13 @@ func main() {
 	inputFile, err := getInput(day)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "bad things happened")
+		return
 	}
 
 	file, err := os.Open(inputFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "more bad things happened")
+		return
 	}
 
 	defer file.Close()
