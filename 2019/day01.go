@@ -10,7 +10,7 @@ import (
 )
 
 
-const day = 1
+// const day = 1
 
 
 func fuelRequiredForMass(mass int) int {
@@ -58,7 +58,7 @@ func readIntegers(r io.Reader) ([]int, error) {
 	return result, scanner.Err()
 }
 
-
+/*
 func main() {
 	inputFile, err := getInput(day)
 	if err != nil {
@@ -81,3 +81,4 @@ func main() {
 	fmt.Printf("Fuel for only modules:   %d\n", fuelForModules)
 	fmt.Printf("Fuel for modules + fuel: %d\n", totalFuel)
 }
+*/
