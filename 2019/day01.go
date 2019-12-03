@@ -25,12 +25,20 @@ func fuelRequiredForMassAndFuel(mass int) int {
 	return fuel + fuelRequiredForMassAndFuel(fuel)
 }
 
-func fuelRequiredForEverything(moduleMasses []int) int {
-	totalFuel := 0
-	for _, moduleMass := range moduleMasses {
-		totalFuel += fuelRequiredForMassAndFuel(moduleMass)
+func mapAndSum(array []int, f func(int) int) int {
+	total := 0
+	for _, elem := range array {
+		total += f(elem)
 	}
-	return totalFuel
+	return total
+}
+
+func fuelRequiredForModules(moduleMasses []int) int {
+	return mapAndSum(moduleMasses, fuelRequiredForMass)
+}
+
+func fuelRequiredForEverything(moduleMasses []int) int {
+	return mapAndSum(moduleMasses, fuelRequiredForMassAndFuel)
 }
 
 func readIntegers(r io.Reader) ([]int, error) {
@@ -67,7 +75,9 @@ func main() {
 	defer file.Close()
 
 	moduleMasses, err := readIntegers(file)
-	total := fuelRequiredForEverything(moduleMasses)
+	fuelForModules := fuelRequiredForModules(moduleMasses)
+	totalFuel := fuelRequiredForEverything(moduleMasses)
 
-	fmt.Println(total)
+	fmt.Printf("Fuel for only modules:   %d\n", fuelForModules)
+	fmt.Printf("Fuel for modules + fuel: %d\n", totalFuel)
 }
