@@ -24,6 +24,7 @@ type intcodeComputer struct {
 	memory []int
 	instructionPtr int
 	instructions map[int]*instruction
+	output int
 }
 
 func (computer *intcodeComputer) addInstruction(in *instruction) {
@@ -50,17 +51,13 @@ func (computer *intcodeComputer) Run() error {
 	computer.instructionPtr = 0
 	code := computer.memory[0]
 
-	fmt.Println("initial state:")
-	printIntcode(computer.memory)
-
 	for {
 		if computer.instructionPtr >= len(computer.memory) {
 			return errors.New("reached end of memory without end opcode")
 		}
 
 		if code == end {
-			fmt.Println("final state:")
-			printIntcode(computer.memory)
+			computer.output = computer.memory[0]
 			return nil
 		}
 
@@ -111,6 +108,7 @@ func newComputer(initMemory []int, instructions ...*instruction) (intcodeCompute
 		initMemory: initMemory,
 		memory: make([]int, len(initMemory)),
 		instructionPtr: 0,
+		output: -1,
 	}
 
 	computer.instructions = make(map[int]*instruction, len(instructions))
@@ -200,5 +198,27 @@ func Solve() {
 		fmt.Fprintln(os.Stderr, "computer failed to run")
 		fmt.Fprintln(os.Stderr, err)
 		return
+	}
+
+	fmt.Printf("replicating gravity assist program gives output = %d\n", computer.output)
+
+	requiredOutput := 19690720
+
+	for noun := 0; noun < 99; noun++ {
+		for verb := 0; verb < 99; verb++ {
+			initMemory[1] = noun
+			initMemory[2] = verb
+
+			computer.initMemory = initMemory
+			err = computer.Run()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "computer failed to run for noun, verb = %d, %d\n", noun, verb)
+				fmt.Fprintln(os.Stderr, err)
+			}
+
+			if computer.output == requiredOutput {
+				fmt.Printf("output = %d when noun, verb = %d, %d\n", requiredOutput, noun, verb)
+			}
+		}
 	}
 }
