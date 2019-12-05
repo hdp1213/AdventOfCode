@@ -20,8 +20,8 @@ type instruction struct {
 }
 
 type intcodeComputer struct {
-	initState []int
-	program []int
+	initMemory []int
+	memory []int
 	instructionPtr int
 	instructions map[int]*instruction
 }
@@ -32,7 +32,7 @@ func (computer *intcodeComputer) addInstruction(in *instruction) {
 
 func (computer *intcodeComputer) ParseParameters(numParams int) []int {
 	defer computer.IncrementBy(numParams)
-	return computer.program[computer.instructionPtr + 1:computer.instructionPtr + numParams]
+	return computer.memory[computer.instructionPtr + 1:computer.instructionPtr + numParams]
 }
 
 func (computer *intcodeComputer) IncrementBy(value int) {
@@ -40,37 +40,37 @@ func (computer *intcodeComputer) IncrementBy(value int) {
 }
 
 func (computer *intcodeComputer) CopyMemory() {
-	for i, code := range computer.initState {
-		computer.program[i] = code
+	for i, code := range computer.initMemory {
+		computer.memory[i] = code
 	}
 }
 
 func (computer *intcodeComputer) Run() error {
 	computer.CopyMemory()
 	computer.instructionPtr = 0
-	code := computer.program[0]
+	code := computer.memory[0]
 
 	fmt.Println("initial state:")
-	printIntcode(computer.program)
+	printIntcode(computer.memory)
 
 	for {
-		if computer.instructionPtr >= len(computer.program) {
-			return errors.New("reached end of program without end opcode")
+		if computer.instructionPtr >= len(computer.memory) {
+			return errors.New("reached end of memory without end opcode")
 		}
 
 		if code == end {
 			fmt.Println("final state:")
-			printIntcode(computer.program)
+			printIntcode(computer.memory)
 			return nil
 		}
 
 		if instruction, ok := computer.instructions[code]; ok {
 			parameters := computer.ParseParameters(instruction.numParams)
-			result := instruction.op(computer.program, instruction.numParams, parameters...)
-			computer.program[parameters[2]] = result
+			result := instruction.op(computer.memory, instruction.numParams, parameters...)
+			computer.memory[parameters[2]] = result
 		}
 
-		code = computer.program[computer.instructionPtr]
+		code = computer.memory[computer.instructionPtr]
 	}
 }
 
@@ -108,8 +108,8 @@ func readIntcode(r io.Reader) ([]int, error) {
 
 func newComputer(initMemory []int, instructions ...*instruction) (intcodeComputer, error) {
 	computer := intcodeComputer {
-		initState: initMemory,
-		program: make([]int, len(initMemory)),
+		initMemory: initMemory,
+		memory: make([]int, len(initMemory)),
 		instructionPtr: 0,
 	}
 
@@ -122,28 +122,28 @@ func newComputer(initMemory []int, instructions ...*instruction) (intcodeCompute
 	return computer, nil
 }
 
-func instructionAdd(program []int, numParams int, pointers ...int) int {
+func instructionAdd(memory []int, numParams int, pointers ...int) int {
 	sum := 0
 	maxInd := numParams - 2
 	for i := 0; i < maxInd; i++ {
 		pointer := pointers[i]
-		sum += program[pointer]
+		sum += memory[pointer]
 	}
 	return sum
 }
 
-func instructionMultiply(program []int, numParams int, pointers ...int) int {
+func instructionMultiply(memory []int, numParams int, pointers ...int) int {
 	total := 1
 	maxInd := numParams - 2
 	for i := 0; i < maxInd; i++ {
 		pointer := pointers[i]
-		total *= program[pointer]
+		total *= memory[pointer]
 	}
 	return total
 }
 
-func printIntcode(program []int) {
-	for _, code := range program {
+func printIntcode(memory []int) {
+	for _, code := range memory {
 		fmt.Printf("%d,", code)
 	}
 	fmt.Println()
@@ -164,7 +164,17 @@ func Solve() {
 		return
 	}
 
-	defer file.Close()
+	initMemory, err := readIntcode(file)
+	file.Close()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to read intcode")
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	file.Close()
+
+	initMemory[1] = 12
+	initMemory[2] = 2
 
 	add := instruction {
 		opCode: 1,
@@ -177,16 +187,6 @@ func Solve() {
 		op: instructionMultiply,
 		numParams: 4,
 	}
-
-	initMemory, err := readIntcode(file)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to read intcode")
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-
-	initMemory[1] = 12
-	initMemory[2] = 2
 
 	computer, err := newComputer(initMemory, &add, &multiply)
 	if err != nil {
