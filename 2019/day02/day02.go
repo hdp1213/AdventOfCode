@@ -1,9 +1,13 @@
 package day02
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"strconv"
+	"strings"
 	"github.com/hdp1213/AdventOfCode/2019/utils"
 )
 
@@ -35,9 +39,19 @@ func (computer *intcodeComputer) IncrementBy(value int) {
 	computer.instructionPtr += value
 }
 
+func (computer *intcodeComputer) CopyMemory() {
+	for i, code := range computer.initState {
+		computer.program[i] = code
+	}
+}
+
 func (computer *intcodeComputer) Run() error {
+	computer.CopyMemory()
 	computer.instructionPtr = 0
 	code := computer.program[0]
+
+	fmt.Println("initial state:")
+	printIntcode(computer.program)
 
 	for {
 		if computer.instructionPtr >= len(computer.program) {
@@ -45,6 +59,8 @@ func (computer *intcodeComputer) Run() error {
 		}
 
 		if code == end {
+			fmt.Println("final state:")
+			printIntcode(computer.program)
 			return nil
 		}
 
@@ -58,9 +74,42 @@ func (computer *intcodeComputer) Run() error {
 	}
 }
 
-func newComputer(program []int, instructions ...*instruction) intcodeComputer {
+func readIntcode(r io.Reader) ([]int, error) {
+	scanner := bufio.NewScanner(r)
+	onComma := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		for i := 0; i < len(data); i++ {
+			if data[i] == ',' {
+				return i + 1, data[:i], nil
+			}
+		}
+
+		if !atEOF {
+			return 0, nil, nil
+		}
+
+		return 0, data, bufio.ErrFinalToken
+	}
+
+	scanner.Split(onComma)
+	var result []int
+
+	for scanner.Scan() {
+		t := strings.Trim(scanner.Text(), "\n ")
+		x, err := strconv.Atoi(t)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, x)
+	}
+
+	return result, scanner.Err()
+}
+
+func newComputer(initMemory []int, instructions ...*instruction) (intcodeComputer, error) {
 	computer := intcodeComputer {
-		program: program,
+		initState: initMemory,
+		program: make([]int, len(initMemory)),
 		instructionPtr: 0,
 	}
 
@@ -70,7 +119,7 @@ func newComputer(program []int, instructions ...*instruction) intcodeComputer {
 		computer.addInstruction(instruction)
 	}
 
-	return computer
+	return computer, nil
 }
 
 func instructionAdd(program []int, numParams int, pointers ...int) int {
@@ -93,8 +142,6 @@ func instructionMultiply(program []int, numParams int, pointers ...int) int {
 	return total
 }
 
-const day = 2
-
 func printIntcode(program []int) {
 	for _, code := range program {
 		fmt.Printf("%d,", code)
@@ -104,6 +151,7 @@ func printIntcode(program []int) {
 
 // Solve solves both parts of the problem
 func Solve() {
+	day := 2
 	inputFile, err := utils.GetInput(day)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "bad things happened")
@@ -118,9 +166,6 @@ func Solve() {
 
 	defer file.Close()
 
-	program := []int{1,12,2,3,1,1,2,3,1,3,4,3,1,5,0,3,2,1,6,19,1,5,19,23,1,23,6,27,1,5,27,31,1,31,6,35,1,9,35,39,2,10,39,43,1,43,6,47,2,6,47,51,1,5,51,55,1,55,13,59,1,59,10,63,2,10,63,67,1,9,67,71,2,6,71,75,1,5,75,79,2,79,13,83,1,83,5,87,1,87,9,91,1,5,91,95,1,5,95,99,1,99,13,103,1,10,103,107,1,107,9,111,1,6,111,115,2,115,13,119,1,10,119,123,2,123,6,127,1,5,127,131,1,5,131,135,1,135,6,139,2,139,10,143,2,143,9,147,1,147,6,151,1,151,13,155,2,155,9,159,1,6,159,163,1,5,163,167,1,5,167,171,1,10,171,175,1,13,175,179,1,179,2,183,1,9,183,0,99,2,14,0,0}
-	printIntcode(program)
-
 	add := instruction {
 		opCode: 1,
 		op: instructionAdd,
@@ -133,7 +178,27 @@ func Solve() {
 		numParams: 4,
 	}
 
-	computer := newComputer(program, &add, &multiply)
-	computer.Run()
-	printIntcode(computer.program)
+	initMemory, err := readIntcode(file)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to read intcode")
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+
+	initMemory[1] = 12
+	initMemory[2] = 2
+
+	computer, err := newComputer(initMemory, &add, &multiply)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "computer failed to initialise")
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+
+	err = computer.Run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "computer failed to run")
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
 }
