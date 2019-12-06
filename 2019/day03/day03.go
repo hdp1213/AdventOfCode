@@ -3,11 +3,22 @@ package day03
 import (
 	"bufio"
 	"fmt"
+	"errors"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"github.com/hdp1213/AdventOfCode/2019/utils"
+)
+
+const (
+	horizontal = iota
+	vertical = iota
+)
+
+const (
+	positive = iota
+	negative = iota
 )
 
 type point struct {
@@ -18,6 +29,8 @@ type point struct {
 type lineSegment struct {
 	start point
 	end point
+	orientation int
+	direction int
 }
 
 func readWirePaths(r io.Reader) ([]string, error) {
@@ -96,9 +109,118 @@ func getCoords(wireElements []string) (points []point, err error) {
 	return
 }
 
-func doesIntersect(seg1 lineSegment, seg2 lineSegment) (intersection bool) {
-	intersection = false
-	return
+func getLineSegments(points []point) ([]lineSegment, error) {
+	lineSegments := make([]lineSegment, len(points) - 1)
+
+	for i := 1; i < len(points); i++ {
+		lineSegment, err := newLineSegment(points[i - 1], points[i])
+
+		if err != nil {
+			return nil, err
+		}
+
+		lineSegments[i - 1] = lineSegment
+	}
+
+	return lineSegments, nil
+}
+
+func processWirePath(wirePath string) ([]lineSegment, error) {
+	pathElements, err := getWirePathElements(wirePath)
+	if err != nil {
+		return nil, err
+	}
+
+	coords, err := getCoords(pathElements)
+	if err != nil {
+		return nil, err
+	}
+
+	lineSegments, err := getLineSegments(coords)
+	if err != nil {
+		return nil, err
+	}
+
+	return lineSegments, nil
+}
+
+func doesIntersect(seg1 lineSegment, seg2 lineSegment) bool {
+	if seg1.orientation == seg2.orientation {
+		return false
+	}
+
+	if seg1.orientation == horizontal {
+		intersectionPoint := point {
+			x: seg2.start.x,
+			y: seg1.start.y,
+		}
+
+		if doesIntersect := intersect(seg1.start.x, seg1.end.x, seg1.direction, intersectionPoint.x); !doesIntersect {
+			return false
+		}
+
+		return intersect(seg2.start.y, seg2.end.y, seg2.direction, intersectionPoint.y)
+	}
+
+	if seg1.orientation == vertical {
+		intersectionPoint := point {
+			x: seg1.start.x,
+			y: seg2.start.y,
+		}
+
+		if doesIntersect := intersect(seg1.start.y, seg1.end.y, seg1.direction, intersectionPoint.y); !doesIntersect {
+			return false
+		}
+
+		return intersect(seg2.start.x, seg2.end.x, seg2.direction, intersectionPoint.x)
+	}
+
+	return false
+}
+
+// type intersectFn func(lineSegment, int) (bool)
+
+func intersect(startCoord, endCoord, direction, intersectCoord int) bool {
+	switch direction {
+	case positive:
+		if startCoord > intersectCoord {
+			return false
+		}
+
+		if intersectCoord > endCoord {
+			return false
+		}
+
+		return true
+
+	case negative:
+		if endCoord > intersectCoord {
+			return false
+		}
+
+		if intersectCoord > startCoord {
+			return false
+		}
+
+		return true
+
+	default:
+		return false
+	}
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // Solve solves both parts of the problem
@@ -127,19 +249,73 @@ func Solve() {
 		return
 	}
 
-	firstWire, err := getWirePathElements(paths[0])
+	firstWire, err := processWirePath(paths[0])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "reading wire paths failed")
+		fmt.Fprintln(os.Stderr, "processing first wire paths failed")
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	points, err := getCoords(firstWire)
+	secondWire, err := processWirePath(paths[1])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "calculating wire coords failed")
+		fmt.Fprintln(os.Stderr, "processing second wire paths failed")
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	fmt.Println(points)
+	fmt.Println(firstWire)
+	fmt.Println(secondWire)
+
+	var allIntersections []point
+
+	for _, segment := range firstWire {
+		for _, testSegment := range secondWire {
+			intersect := doesIntersect(segment, testSegment)
+			if intersect {
+				fmt.Printf("%v intersects with %v\n", segment, testSegment)
+				intersectionPoint := point {
+					x: segment.start.x,
+					y: testSegment.start.y,
+				}
+				allIntersections = append(allIntersections, intersectionPoint)
+				break
+			}
+		}
+	}
+
+	fmt.Println(allIntersections)
+}
+
+func newLineSegment(start point, end point) (lineSegment, error) {
+	direction, orientation := -1, -1
+
+	if start.x == end.x {
+		orientation = vertical
+
+		if start.y <= end.y {
+			direction = positive
+		} else {
+			direction = negative
+		}
+
+	} else {
+		if start.y == end.y {
+			orientation = horizontal
+
+			if start.x <= end.x {
+				direction = positive
+			} else {
+				direction = negative
+			}
+		} else {
+			return lineSegment{}, errors.New("aw sausages")
+		}
+	}
+
+	return lineSegment {
+		start: start,
+		end: end,
+		orientation: orientation,
+		direction: direction,
+	}, nil
 }
