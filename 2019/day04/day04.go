@@ -10,40 +10,30 @@ import (
 	"github.com/hdp1213/AdventOfCode/2019/utils"
 )
 
-type code int
-
 func validate(code int) bool {
-	factor := 10
-	div := code
+	return validateRecursive(code, 10, false)
+}
 
-	pastDigit := -1
-	hasSameDigit := false
+func validateRecursive(x, prevDigit int, hasSameDigit bool) bool {
+	const factor = 10
+	div := x / factor
+	digit := x - div * factor
 
-	for div > 0 {
-		div /= factor
-		digit := code - div * factor
+	if digit > prevDigit {
+		return false
+	}
 
-		if digit > pastDigit && pastDigit != -1 {
-			return false
-		}
+	if digit == prevDigit && !hasSameDigit {
+		hasSameDigit = true
+	}
 
-		if digit == pastDigit && !hasSameDigit {
-			hasSameDigit = true
-		}
-
-		pastDigit = digit
-		code = div
+	if div > 0 {
+		return validateRecursive(div, digit, hasSameDigit)
 	}
 
 	return hasSameDigit
 }
 
-func testValidation(code int) func(int) bool {
-	// state := code
-	return func(x int) bool {
-		return true
-	}
-}
 
 func readRange(r io.Reader) (int, int, error) {
 	data, err := ioutil.ReadAll(r)
@@ -94,5 +84,12 @@ func Solve() {
 		return
 	}
 
-	fmt.Printf("%d %d\n", a, b)
+	totalValidCodes := 0
+	for code := a; code <= b; code++ {
+		if validate(code) {
+			totalValidCodes++
+		}
+	}
+
+	fmt.Printf("total valid codes found in [%d,%d] = %d\n", a, b, totalValidCodes)
 }
