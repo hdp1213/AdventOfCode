@@ -40,6 +40,12 @@ func TestSmallPaths(t *testing.T) {
 	if distance != 6 {
 		t.Errorf("expected distance == 6, got %d", point2)
 	}
+
+	wireDistance := findSmallestWireDistance(firstWire, secondWire, intersections)
+
+	if wireDistance != 30 {
+		t.Errorf("expected wireDistance == 30, got %d", wireDistance)
+	}
 }
 
 func TestSmallPathsFlipped90(t *testing.T) {
@@ -160,13 +166,45 @@ func TestFirstMediumPaths(t *testing.T) {
 	firstPath := "R75,D30,R83,U83,L12,D49,R71,U7,L72"
 	secondPath := "U62,R66,U55,R34,D71,R55,D58,R83"
 
-	distance, err := findClosestIntersection(firstPath, secondPath)
+	distance, err := findClosestManhattanIntersection(firstPath, secondPath)
 	if err != nil {
 		t.Error(err)
 	}
 
 	if distance != 159 {
 		t.Errorf("expected distance == 159, got %d", distance)
+	}
+
+	wireDistance, err := findClosestWireIntersection(firstPath, secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if wireDistance != 610 {
+		t.Errorf("expected wireDistance == 610, got %d", wireDistance)
+	}
+}
+
+func TestSecondMediumPaths(t *testing.T) {
+	firstPath := "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
+	secondPath := "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
+
+	distance, err := findClosestManhattanIntersection(firstPath, secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if distance != 135 {
+		t.Errorf("expected distance == 135, got %d", distance)
+	}
+
+	wireDistance, err := findClosestWireIntersection(firstPath, secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if wireDistance != 410 {
+		t.Errorf("expected wireDistance == 410, got %d", wireDistance)
 	}
 }
 
@@ -188,20 +226,6 @@ func TestMultipleIntersections(t *testing.T) {
 
 	if len(allIntersections) != 3 {
 		t.Errorf("expected len(allIntersections) == 3, got %d", len(allIntersections))
-	}
-}
-
-func TestSecondMediumPaths(t *testing.T) {
-	firstPath := "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
-	secondPath := "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
-
-	distance, err := findClosestIntersection(firstPath, secondPath)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if distance != 135 {
-		t.Errorf("expected distance == 135, got %d", distance)
 	}
 }
 
@@ -366,5 +390,53 @@ func TestIntersectionVertical(t *testing.T) {
 
 	if point.x != 0 && point.y != 5 {
 		t.Error("intersection point should be {0, 5}")
+	}
+}
+
+func TestGetDistanceExact(t *testing.T) {
+	path := "R4,U3"
+	point := point{x: 4, y: 3}
+
+	wire, err := processWirePath(path)
+	if err != nil {
+		t.Error(err)
+	}
+
+	wireDistance := getDistanceToPoint(wire, point)
+
+	if wireDistance != 7 {
+		t.Errorf("expected wireDistance == 7, got %d", wireDistance)
+	}
+}
+
+func TestGetDistancePartial(t *testing.T) {
+	path := "R4,U10"
+	point := point{x: 4, y: 3}
+
+	wire, err := processWirePath(path)
+	if err != nil {
+		t.Error(err)
+	}
+
+	wireDistance := getDistanceToPoint(wire, point)
+
+	if wireDistance != 7 {
+		t.Errorf("expected wireDistance == 7, got %d", wireDistance)
+	}
+}
+
+func TestGetDistanceOvershoot(t *testing.T) {
+	path := "R4,U10,L3,D2"
+	point := point{x: 4, y: 3}
+
+	wire, err := processWirePath(path)
+	if err != nil {
+		t.Error(err)
+	}
+
+	wireDistance := getDistanceToPoint(wire, point)
+
+	if wireDistance != 7 {
+		t.Errorf("expected wireDistance == 7, got %d", wireDistance)
 	}
 }
