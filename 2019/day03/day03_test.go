@@ -81,13 +81,13 @@ func TestNoIntersectionHorizontal(t *testing.T) {
 		t.Error("error")
 	}
 
-	intersection, pt := doesIntersect(segment1, segment2)
+	intersection, points := doesIntersect(segment1, segment2)
 
 	if intersection {
 		t.Error("segments should not intersect")
 	}
 
-	if pt.x != 0 && pt.y != 0 {
+	if len(points) != 0 {
 		t.Error("intersection point is non-zero")
 	}
 }
@@ -103,13 +103,15 @@ func TestIntersectionHorizontal(t *testing.T) {
 		t.Error("error")
 	}
 
-	intersection, pt := doesIntersect(segment1, segment2)
+	intersection, points := doesIntersect(segment1, segment2)
 
 	if !intersection {
 		t.Error("segments should intersect")
 	}
 
-	if pt.x != 5 && pt.y != 0 {
+	point := points[0]
+
+	if point.x != 5 && point.y != 0 {
 		t.Error("intersection point should be {5, 0}")
 	}
 }
@@ -125,13 +127,13 @@ func TestNoIntersectionVertical(t *testing.T) {
 		t.Error("error")
 	}
 
-	intersection, pt := doesIntersect(segment1, segment2)
+	intersection, points := doesIntersect(segment1, segment2)
 
 	if intersection {
 		t.Error("segments should not intersect")
 	}
 
-	if pt.x != 0 && pt.y != 0 {
+	if len(points) != 0 {
 		t.Error("intersection point is non-zero")
 	}
 }
@@ -147,13 +149,15 @@ func TestIntersectionVertical(t *testing.T) {
 		t.Error("error")
 	}
 
-	intersection, pt := doesIntersect(segment1, segment2)
+	intersection, points := doesIntersect(segment1, segment2)
 
 	if !intersection {
 		t.Error("segments should intersect")
 	}
 
-	if pt.x != 0 && pt.y != 5 {
+	point := points[0]
+
+	if point.x != 0 && point.y != 5 {
 		t.Error("intersection point should be {0, 5}")
 	}
 }

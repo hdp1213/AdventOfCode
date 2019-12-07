@@ -159,9 +159,9 @@ func processWirePath(wirePath string) ([]lineSegment, error) {
 	return lineSegments, nil
 }
 
-func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, point) {
+func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, pointArray) {
 	if seg1.orientation == seg2.orientation {
-		return false, point{}
+		return false, pointArray{}
 	}
 
 	if seg1.orientation == horizontal {
@@ -171,14 +171,14 @@ func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, point) {
 		}
 
 		if doesIntersectX := intersect(seg1.start.x, seg1.end.x, seg1.direction, intersectionPoint.x); !doesIntersectX {
-			return false, point{}
+			return false, pointArray{}
 		}
 
 		if doesIntersectY := intersect(seg2.start.y, seg2.end.y, seg2.direction, intersectionPoint.y); !doesIntersectY {
-			return false, point{}
+			return false, pointArray{}
 		}
 
-		return true, intersectionPoint
+		return true, pointArray{intersectionPoint}
 	}
 
 	if seg1.orientation == vertical {
@@ -188,17 +188,17 @@ func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, point) {
 		}
 
 		if doesIntersectX := intersect(seg1.start.y, seg1.end.y, seg1.direction, intersectionPoint.y); !doesIntersectX {
-			return false, point{}
+			return false, pointArray{}
 		}
 
 		if doesIntersectY := intersect(seg2.start.x, seg2.end.x, seg2.direction, intersectionPoint.x); !doesIntersectY {
-			return false, point{}
+			return false, pointArray{}
 		}
 
-		return true, intersectionPoint
+		return true, pointArray{intersectionPoint}
 	}
 
-	return false, point{}
+	return false, pointArray{}
 }
 
 func intersect(startCoord, endCoord, direction, intersectCoord int) bool {
@@ -235,10 +235,14 @@ func findIntersections(firstWire []lineSegment, secondWire []lineSegment) pointA
 
 	for _, segment := range firstWire {
 		for _, testSegment := range secondWire {
-			intersect, intersectionPoint := doesIntersect(segment, testSegment)
-			// Remove the origin from list of intersections
-			if intersect && intersectionPoint.x != 0 && intersectionPoint.y != 0 {
-				allIntersections = append(allIntersections, intersectionPoint)
+			intersect, intersectionPoints := doesIntersect(segment, testSegment)
+			if intersect {
+				for _, intersectionPoint := range intersectionPoints {
+					// Remove the origin from list of intersections
+					if intersectionPoint.x != 0 && intersectionPoint.y != 0 {
+						allIntersections = append(allIntersections, intersectionPoint)
+					}
+				}
 				break
 			}
 		}
