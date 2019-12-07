@@ -42,6 +42,82 @@ func TestSmallPaths(t *testing.T) {
 	}
 }
 
+func TestSmallPathsFlipped180(t *testing.T) {
+	firstPath := "L8,D5,R5,U3"
+	secondPath := "D7,L6,U4,R4"
+
+	firstWire, err := processWirePath(firstPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	secondWire, err := processWirePath(secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	intersections := findIntersections(firstWire, secondWire)
+
+	if len(intersections) != 2 {
+		t.Errorf("expected len(intersections) == 2, got %d", len(intersections))
+	}
+
+	point1 := point {x: -3, y: -3}
+	point2 := point {x: -6, y: -5}
+
+	if !intersections.contains(point1) {
+		t.Errorf("could not find point %v", point1)
+	}
+
+	if !intersections.contains(point2) {
+		t.Errorf("could not find point %v", point2)
+	}
+
+	distance := findSmallestManhattanDistance(intersections)
+
+	if distance != 6 {
+		t.Errorf("expected distance == 6, got %d", point2)
+	}
+}
+
+func TestSmallPathsFlipped90(t *testing.T) {
+	firstPath := "U8,L5,D5,R3"
+	secondPath := "L7,U6,R4,D4"
+
+	firstWire, err := processWirePath(firstPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	secondWire, err := processWirePath(secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	intersections := findIntersections(firstWire, secondWire)
+
+	if len(intersections) != 2 {
+		t.Errorf("expected len(intersections) == 2, got %d", len(intersections))
+	}
+
+	point1 := point {x: -3, y: 3}
+	point2 := point {x: -5, y: 6}
+
+	if !intersections.contains(point1) {
+		t.Errorf("could not find point %v", point1)
+	}
+
+	if !intersections.contains(point2) {
+		t.Errorf("could not find point %v", point2)
+	}
+
+	distance := findSmallestManhattanDistance(intersections)
+
+	if distance != 6 {
+		t.Errorf("expected distance == 6, got %d", point2)
+	}
+}
+
 func TestFirstMediumPaths(t *testing.T) {
 	firstPath := "R75,D30,R83,U83,L12,D49,R71,U7,L72"
 	secondPath := "U62,R66,U55,R34,D71,R55,D58,R83"
