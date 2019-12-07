@@ -38,7 +38,7 @@ func TestSmallPaths(t *testing.T) {
 	distance := findSmallestManhattanDistance(intersections)
 
 	if distance != 6 {
-		t.Errorf("expected distance == 6, got %d", point2)
+		t.Errorf("expected distance == 6, got %d", distance)
 	}
 
 	wireDistance := findSmallestWireDistance(firstWire, secondWire, intersections)
@@ -82,7 +82,7 @@ func TestSmallPathsFlipped90(t *testing.T) {
 	distance := findSmallestManhattanDistance(intersections)
 
 	if distance != 6 {
-		t.Errorf("expected distance == 6, got %d", point2)
+		t.Errorf("expected distance == 6, got %d", distance)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestSmallPathsFlipped180(t *testing.T) {
 	distance := findSmallestManhattanDistance(intersections)
 
 	if distance != 6 {
-		t.Errorf("expected distance == 6, got %d", point2)
+		t.Errorf("expected distance == 6, got %d", distance)
 	}
 }
 
@@ -158,7 +158,7 @@ func TestSmallPathsFlipped270(t *testing.T) {
 	distance := findSmallestManhattanDistance(intersections)
 
 	if distance != 6 {
-		t.Errorf("expected distance == 6, got %d", point2)
+		t.Errorf("expected distance == 6, got %d", distance)
 	}
 }
 
