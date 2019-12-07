@@ -26,11 +26,26 @@ type point struct {
 	y int
 }
 
+func (point *point) manhattanDistance() int {
+	return abs(point.x) + abs(point.y)
+}
+
+type pointArray []point
+
 type lineSegment struct {
 	start point
 	end point
 	orientation int
 	direction int
+}
+
+func (points pointArray) contains(testPoint point) bool {
+	for _, point := range points {
+		if testPoint.x == point.x && testPoint.y == point.y {
+			return true
+		}
+	}
+	return false
 }
 
 func readWirePaths(r io.Reader) ([]string, error) {
@@ -74,10 +89,10 @@ func getWirePathElements(wirePath string) ([]string, error) {
 	return pathElements, scanner.Err()
 }
 
-func getCoords(wireElements []string) (points []point, err error) {
+func getCoords(wireElements []string) (points pointArray, err error) {
 	// As a reminder, x is R/L, y is U/D. +ve x -> R, +ve y -> U
 	newPoint := point {x:0,y:0}
-	points = make([]point, len(wireElements) + 1)
+	points = make(pointArray, len(wireElements) + 1)
 	points[0] = newPoint
 
 	for i, element := range wireElements {
@@ -109,7 +124,7 @@ func getCoords(wireElements []string) (points []point, err error) {
 	return
 }
 
-func getLineSegments(points []point) ([]lineSegment, error) {
+func getLineSegments(points pointArray) ([]lineSegment, error) {
 	lineSegments := make([]lineSegment, len(points) - 1)
 
 	for i := 1; i < len(points); i++ {
@@ -186,8 +201,6 @@ func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, point) {
 	return false, point{}
 }
 
-// type intersectFn func(lineSegment, int) (bool)
-
 func intersect(startCoord, endCoord, direction, intersectCoord int) bool {
 	switch direction {
 	case positive:
@@ -217,11 +230,30 @@ func intersect(startCoord, endCoord, direction, intersectCoord int) bool {
 	}
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
+func findIntersections(firstWire []lineSegment, secondWire []lineSegment) pointArray {
+	var allIntersections pointArray
+
+	for _, segment := range firstWire {
+		for _, testSegment := range secondWire {
+			intersect, intersectionPoint := doesIntersect(segment, testSegment)
+			// Remove the origin from list of intersections
+			if intersect && intersectionPoint.x != 0 && intersectionPoint.y != 0 {
+				allIntersections = append(allIntersections, intersectionPoint)
+				break
+			}
+		}
 	}
-	return b
+
+	return allIntersections
+}
+
+func findSmallestManhattanDistance(points pointArray) int {
+	minDistance := points[0].manhattanDistance()
+	for _, point := range points {
+		minDistance = min(minDistance, point.manhattanDistance())
+	}
+
+	return minDistance
 }
 
 func min(a, b int) int {
@@ -229,6 +261,28 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+
+func findClosestIntersection(firstWirePath string, secondWirePath string) (int, error) {
+	firstWire, err := processWirePath(firstWirePath)
+	if err != nil {
+		return 0, err
+	}
+
+	secondWire, err := processWirePath(secondWirePath)
+	if err != nil {
+		return 0, err
+	}
+
+	allIntersections := findIntersections(firstWire, secondWire)
+	return findSmallestManhattanDistance(allIntersections), nil
 }
 
 // Solve solves both parts of the problem
@@ -257,32 +311,14 @@ func Solve() {
 		return
 	}
 
-	firstWire, err := processWirePath(paths[0])
+	result, err := findClosestIntersection(paths[0], paths[1])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "processing first wire paths failed")
+		fmt.Fprintln(os.Stderr, "finding closest intersection failed")
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	secondWire, err := processWirePath(paths[1])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "processing second wire paths failed")
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-
-	var allIntersections []point
-
-	for _, segment := range firstWire {
-		for _, testSegment := range secondWire {
-			intersect, intersectionPoint := doesIntersect(segment, testSegment)
-			if intersect {
-				fmt.Printf("%v intersects with %v at %v\n", segment, testSegment, intersectionPoint)
-				allIntersections = append(allIntersections, intersectionPoint)
-				break
-			}
-		}
-	}
+	fmt.Printf("found closest distance of %d\n", result)
 }
 
 func newLineSegment(start point, end point) (lineSegment, error) {
