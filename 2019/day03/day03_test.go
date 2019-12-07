@@ -170,6 +170,27 @@ func TestFirstMediumPaths(t *testing.T) {
 	}
 }
 
+func TestMultipleIntersections(t *testing.T) {
+	firstPath := "U5,R50"
+	secondPath := "R10,U10,R10,D10,R10,U10,R20"
+
+	firstWire, err := processWirePath(firstPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	secondWire, err := processWirePath(secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	allIntersections := findIntersections(firstWire, secondWire)
+
+	if len(allIntersections) != 3 {
+		t.Errorf("expected len(allIntersections) == 3, got %d", len(allIntersections))
+	}
+}
+
 func TestSecondMediumPaths(t *testing.T) {
 	firstPath := "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
 	secondPath := "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
