@@ -184,6 +184,77 @@ func TestSecondMediumPaths(t *testing.T) {
 	}
 }
 
+func TestElbowIntersection(t *testing.T) {
+	firstPath := "R5,U10,R10"
+	secondPath := "U10,R5,U2"
+
+	firstWire, err := processWirePath(firstPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	secondWire, err := processWirePath(secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	intersections := findIntersections(firstWire, secondWire)
+
+	if len(intersections) != 1 {
+		t.Errorf("expected len(intersections) == 1, got %d", len(intersections))
+	}
+
+	point1 := point {x: 5, y: 10}
+
+	if !intersections.contains(point1) {
+		t.Errorf("could not find point %v", point1)
+	}
+
+	distance := findSmallestManhattanDistance(intersections)
+
+	if distance != 15 {
+		t.Errorf("expected distance == 15, got %d", distance)
+	}
+}
+
+func TestOverlapIntersection(t *testing.T) {
+	firstPath := "D2,R10,U7"
+	secondPath := "R10,U2,R2"
+
+	firstWire, err := processWirePath(firstPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	secondWire, err := processWirePath(secondPath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	intersections := findIntersections(firstWire, secondWire)
+
+	if len(intersections) != 2 {
+		t.Errorf("expected len(intersections) == 2, got %d", len(intersections))
+	}
+
+	testPoints := pointArray{
+		point {x: 10, y: 0},
+		point {x: 10, y: 1},
+	}
+
+	for _, point := range testPoints {
+		if !intersections.contains(point) {
+			t.Errorf("could not find point %v", point)
+		}
+	}
+
+	distance := findSmallestManhattanDistance(intersections)
+
+	if distance != 15 {
+		t.Errorf("expected distance == 15, got %d", distance)
+	}
+}
+
 func TestNoIntersectionHorizontal(t *testing.T) {
 	segment1, err := newLineSegment(point{x: 0, y: 0}, point{x: 10, y: 0})
 	if err != nil {

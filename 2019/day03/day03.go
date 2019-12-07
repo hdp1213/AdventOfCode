@@ -252,6 +252,10 @@ func findIntersections(firstWire []lineSegment, secondWire []lineSegment) pointA
 }
 
 func findSmallestManhattanDistance(points pointArray) int {
+	if len(points) == 0 {
+		return -1
+	}
+
 	minDistance := points[0].manhattanDistance()
 	for _, point := range points {
 		minDistance = min(minDistance, point.manhattanDistance())
