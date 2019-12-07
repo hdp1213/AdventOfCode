@@ -53,10 +53,20 @@ type Instruction struct {
 }
 
 // Execute runs an instruction's operation on the given computer
-func (instruction *Instruction) Execute(computer *IntcodeComputer, input int, parameters ...Parameter) error {
+func (instruction *Instruction) Execute(computer *IntcodeComputer, inputs *[]int, parameters ...Parameter) error {
 	if len(parameters) != instruction.numValues - 1 {
 		errorMessage := fmt.Sprintf("instruction opcode %d incorrectly configured: bad numValues", instruction.opCode)
 		return errors.New(errorMessage)
+	}
+
+	input := 0
+
+	if instruction.opCode == Input.opCode {
+		if len(*inputs) == 0 {
+			return errors.New("no more inputs left to use")
+		}
+
+		input, *inputs = (*inputs)[0], (*inputs)[1:]
 	}
 
 	err := instruction.op(computer, input, parameters)
@@ -300,7 +310,7 @@ func parseModes(opCode, modeCode, numValues int) ([]int, error) {
 }
 
 // Run runs the IntcodeComputer's program
-func (computer *IntcodeComputer) Run(input int) error {
+func (computer *IntcodeComputer) Run(inputs *[]int) error {
 	computer.copyMemory()
 	computer.output = []int{}
 	computer.instructionPtr = 0
@@ -312,6 +322,9 @@ func (computer *IntcodeComputer) Run(input int) error {
 
 	for {
 		if instruction.opCode == EndCode {
+			if len(*inputs) != 0 {
+				return errors.New("not all inputs used")
+			}
 			return nil
 		}
 
@@ -319,7 +332,7 @@ func (computer *IntcodeComputer) Run(input int) error {
 			return errors.New("reached end of memory without end opcode")
 		}
 
-		instruction.Execute(computer, input, parameters...)
+		instruction.Execute(computer, inputs, parameters...)
 
 		instruction, parameters, err = computer.parseNextInstruction()
 		if err != nil {
@@ -388,7 +401,7 @@ func Solve() {
 		return
 	}
 
-	err = computer1.Run(1)
+	err = computer1.Run(&[]int{1})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintf(os.Stderr, "computer failed to run, reached instruction %d\n", computer1.instructionPtr)
@@ -406,7 +419,7 @@ func Solve() {
 		return
 	}
 
-	err = computer2.Run(5)
+	err = computer2.Run(&[]int{5})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintf(os.Stderr, "computer failed to run, reached instruction %d\n", computer2.instructionPtr)

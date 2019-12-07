@@ -152,7 +152,7 @@ func TestComputerEqual(t *testing.T) {
 		}
 
 		for i, input := range test.inputs {
-			err = computer.Run(input)
+			err = computer.Run(&[]int{input})
 			if err != nil {
 				t.Error(err)
 			}
@@ -198,7 +198,7 @@ func TestComputerLessThan(t *testing.T) {
 		}
 
 		for i, input := range test.inputs {
-			err =computer.Run(input)
+			err =computer.Run(&[]int{input})
 			if err != nil {
 				t.Error(err)
 			}
@@ -244,7 +244,7 @@ func TestComputerJump(t *testing.T) {
 		}
 
 		for i, input := range test.inputs {
-			err = computer.Run(input)
+			err = computer.Run(&[]int{input})
 			if err != nil {
 				t.Error(err)
 			}
@@ -279,7 +279,7 @@ func TestComputerLargerExample(t *testing.T) {
 	}
 
 	for i, input := range test.inputs {
-		err = computer.Run(input)
+		err = computer.Run(&[]int{input})
 		if err != nil {
 			t.Error(err)
 		}
