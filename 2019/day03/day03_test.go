@@ -233,13 +233,14 @@ func TestOverlapIntersection(t *testing.T) {
 
 	intersections := findIntersections(firstWire, secondWire)
 
-	if len(intersections) != 2 {
-		t.Errorf("expected len(intersections) == 2, got %d", len(intersections))
+	if len(intersections) != 3 {
+		t.Errorf("expected len(intersections) == 3, got %d", len(intersections))
 	}
 
 	testPoints := pointArray{
 		point {x: 10, y: 0},
 		point {x: 10, y: 1},
+		point {x: 10, y: 2},
 	}
 
 	for _, point := range testPoints {
@@ -250,8 +251,8 @@ func TestOverlapIntersection(t *testing.T) {
 
 	distance := findSmallestManhattanDistance(intersections)
 
-	if distance != 15 {
-		t.Errorf("expected distance == 15, got %d", distance)
+	if distance != 10 {
+		t.Errorf("expected distance == 10, got %d", distance)
 	}
 }
 

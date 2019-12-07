@@ -161,6 +161,40 @@ func processWirePath(wirePath string) ([]lineSegment, error) {
 
 func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, pointArray) {
 	if seg1.orientation == seg2.orientation {
+		var intersectionPoints pointArray
+
+		if seg1.orientation == horizontal && seg1.start.y == seg2.start.y {
+			minX, maxX := min(seg1.start.x, seg1.end.x), max(seg1.start.x, seg1.end.x)
+
+			for x := minX; x <= maxX; x++ {
+				if intersect(seg2.start.x, seg2.end.x, seg2.direction, x) {
+					intersectionPoints = append(intersectionPoints, point{x: x, y: seg1.start.y})
+				}
+			}
+
+			if len(intersectionPoints) > 0 {
+				return true, intersectionPoints
+			}
+
+			return false, pointArray{}
+		}
+
+		if seg1.orientation == vertical && seg1.start.x == seg2.start.x {
+			minY, maxY := min(seg1.start.y, seg1.end.y), max(seg1.start.y, seg1.end.y)
+
+			for y := minY; y <= maxY; y++ {
+				if intersect(seg2.start.y, seg2.end.y, seg2.direction, y) {
+					intersectionPoints = append(intersectionPoints, point{x: seg1.start.x, y: y})
+				}
+			}
+
+			if len(intersectionPoints) > 0 {
+				return true, intersectionPoints
+			}
+
+			return false, pointArray{}
+		}
+
 		return false, pointArray{}
 	}
 
@@ -237,13 +271,17 @@ func findIntersections(firstWire []lineSegment, secondWire []lineSegment) pointA
 		for _, testSegment := range secondWire {
 			intersect, intersectionPoints := doesIntersect(segment, testSegment)
 			if intersect {
+				// Ignore origin intersection
+				if len(intersectionPoints) == 1 && intersectionPoints[0].x == 0 && intersectionPoints[0].y == 0 {
+					continue
+				}
+
 				for _, intersectionPoint := range intersectionPoints {
-					// Remove the origin from list of intersections
-					if intersectionPoint.x != 0 && intersectionPoint.y != 0 {
+					// Don't include duplicates
+					if !allIntersections.contains(intersectionPoint) {
 						allIntersections = append(allIntersections, intersectionPoint)
 					}
 				}
-				break
 			}
 		}
 	}
@@ -266,6 +304,13 @@ func findSmallestManhattanDistance(points pointArray) int {
 
 func min(a, b int) int {
 	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
 		return a
 	}
 	return b
