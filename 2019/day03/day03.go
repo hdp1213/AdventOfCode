@@ -144,9 +144,9 @@ func processWirePath(wirePath string) ([]lineSegment, error) {
 	return lineSegments, nil
 }
 
-func doesIntersect(seg1 lineSegment, seg2 lineSegment) bool {
+func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, point) {
 	if seg1.orientation == seg2.orientation {
-		return false
+		return false, point{}
 	}
 
 	if seg1.orientation == horizontal {
@@ -155,11 +155,15 @@ func doesIntersect(seg1 lineSegment, seg2 lineSegment) bool {
 			y: seg1.start.y,
 		}
 
-		if doesIntersect := intersect(seg1.start.x, seg1.end.x, seg1.direction, intersectionPoint.x); !doesIntersect {
-			return false
+		if doesIntersectX := intersect(seg1.start.x, seg1.end.x, seg1.direction, intersectionPoint.x); !doesIntersectX {
+			return false, point{}
 		}
 
-		return intersect(seg2.start.y, seg2.end.y, seg2.direction, intersectionPoint.y)
+		if doesIntersectY := intersect(seg2.start.y, seg2.end.y, seg2.direction, intersectionPoint.y); !doesIntersectY {
+			return false, point{}
+		}
+
+		return true, intersectionPoint
 	}
 
 	if seg1.orientation == vertical {
@@ -168,14 +172,18 @@ func doesIntersect(seg1 lineSegment, seg2 lineSegment) bool {
 			y: seg2.start.y,
 		}
 
-		if doesIntersect := intersect(seg1.start.y, seg1.end.y, seg1.direction, intersectionPoint.y); !doesIntersect {
-			return false
+		if doesIntersectX := intersect(seg1.start.y, seg1.end.y, seg1.direction, intersectionPoint.y); !doesIntersectX {
+			return false, point{}
 		}
 
-		return intersect(seg2.start.x, seg2.end.x, seg2.direction, intersectionPoint.x)
+		if doesIntersectY := intersect(seg2.start.x, seg2.end.x, seg2.direction, intersectionPoint.x); !doesIntersectY {
+			return false, point{}
+		}
+
+		return true, intersectionPoint
 	}
 
-	return false
+	return false, point{}
 }
 
 // type intersectFn func(lineSegment, int) (bool)
@@ -263,27 +271,18 @@ func Solve() {
 		return
 	}
 
-	fmt.Println(firstWire)
-	fmt.Println(secondWire)
-
 	var allIntersections []point
 
 	for _, segment := range firstWire {
 		for _, testSegment := range secondWire {
-			intersect := doesIntersect(segment, testSegment)
+			intersect, intersectionPoint := doesIntersect(segment, testSegment)
 			if intersect {
-				fmt.Printf("%v intersects with %v\n", segment, testSegment)
-				intersectionPoint := point {
-					x: segment.start.x,
-					y: testSegment.start.y,
-				}
+				fmt.Printf("%v intersects with %v at %v\n", segment, testSegment, intersectionPoint)
 				allIntersections = append(allIntersections, intersectionPoint)
 				break
 			}
 		}
 	}
-
-	fmt.Println(allIntersections)
 }
 
 func newLineSegment(start point, end point) (lineSegment, error) {
