@@ -5,6 +5,7 @@ import (
 	"github.com/hdp1213/AdventOfCode/2019/day02"
 	"github.com/hdp1213/AdventOfCode/2019/day03"
 	"github.com/hdp1213/AdventOfCode/2019/day04"
+	"github.com/hdp1213/AdventOfCode/2019/day05"
 )
 
 func main() {
@@ -12,4 +13,5 @@ func main() {
 	day02.Solve()
 	day03.Solve()
 	day04.Solve()
+	day05.Solve()
 }
