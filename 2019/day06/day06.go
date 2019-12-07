@@ -5,14 +5,19 @@ import (
 	"fmt"
 	"io"
 	"os"
-	// "sort"
 	"strings"
 	"github.com/hdp1213/AdventOfCode/2019/utils"
 )
 
 
-// COM thing
+// COM is the centre of mass constant
 const COM = "COM"
+
+// YOU is you, the player
+const YOU = "YOU"
+
+// SAN is Santa, Lord rest his soul
+const SAN = "SAN"
 
 type orbit struct {
 	name string
@@ -90,6 +95,37 @@ func orbitCounter(currentOrbit orbit, count *int) {
 	}
 }
 
+func transferBetweenOrbits(origin, dest orbit) int {
+	originPlaces, destPlaces := orbitList{}, orbitList{}
+
+	diveIntoOrbit(&origin, &originPlaces)
+	diveIntoOrbit(&dest, &destPlaces)
+
+	for i, dests := range destPlaces {
+		if _, ok := originPlaces.get(dests.name); ok {
+
+			for j, origins := range originPlaces {
+				if origins.name == dests.name {
+					return i + j
+				}
+			}
+		}
+	}
+
+	return len(originPlaces) + len(destPlaces)
+}
+
+func diveIntoOrbit(orbit *orbit, prevOrbits *orbitList) {
+	nextOrbit := orbit.parent
+
+	if nextOrbit == nil {
+		return
+	}
+
+	*prevOrbits = append(*prevOrbits, *nextOrbit)
+	diveIntoOrbit(nextOrbit, prevOrbits)
+}
+
 // Solve solves both parts of the problem
 func Solve() {
 	day := 6
@@ -121,4 +157,10 @@ func Solve() {
 	totalOrbits := countAllOrbitTypes(orbits)
 
 	fmt.Printf("total orbits (direct & indirect) = %d\n", totalOrbits)
+
+	you, _ := orbits.get(YOU)
+	san, _ := orbits.get(SAN)
+
+	transfers := transferBetweenOrbits(you, san)
+	fmt.Printf("number of orbital transfers required to reach Santa = %d\n", transfers)
 }
