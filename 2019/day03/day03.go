@@ -222,7 +222,7 @@ func doesIntersect(seg1, seg2 lineSegment) (bool, pointArray) {
 		var intersectionPoints pointArray
 
 		if seg1.orientation == horizontal && seg1.start.y == seg2.start.y {
-			minX, maxX := min(seg1.start.x, seg1.end.x), max(seg1.start.x, seg1.end.x)
+			minX, maxX := min(seg1.start.x, seg1.end.x), Max(seg1.start.x, seg1.end.x)
 
 			for x := minX; x <= maxX; x++ {
 				if intersect(seg2.start.x, seg2.end.x, seg2.direction, x) {
@@ -238,7 +238,7 @@ func doesIntersect(seg1, seg2 lineSegment) (bool, pointArray) {
 		}
 
 		if seg1.orientation == vertical && seg1.start.x == seg2.start.x {
-			minY, maxY := min(seg1.start.y, seg1.end.y), max(seg1.start.y, seg1.end.y)
+			minY, maxY := min(seg1.start.y, seg1.end.y), Max(seg1.start.y, seg1.end.y)
 
 			for y := minY; y <= maxY; y++ {
 				if intersect(seg2.start.y, seg2.end.y, seg2.direction, y) {
@@ -395,7 +395,8 @@ func min(a, b int) int {
 	return b
 }
 
-func max(a, b int) int {
+// Max gets the maximum value of two integers
+func Max(a, b int) int {
 	if a > b {
 		return a
 	}

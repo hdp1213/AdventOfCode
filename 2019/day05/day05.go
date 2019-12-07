@@ -109,7 +109,7 @@ func instructionInput(computer *IntcodeComputer, input int, parameters []Paramet
 
 func instructionOutput(computer *IntcodeComputer, input int, parameters []Parameter) error {
 	output := parameters[0].getValue(computer.memory)
-	computer.output = append(computer.output, output)
+	computer.Output = append(computer.Output, output)
 	return nil
 }
 
@@ -231,7 +231,7 @@ type IntcodeComputer struct {
 	initMemory, memory []int
 	instructionPtr int
 	instructions map[int]*Instruction
-	output []int
+	Output []int
 	hasIncremented bool
 }
 
@@ -312,7 +312,7 @@ func parseModes(opCode, modeCode, numValues int) ([]int, error) {
 // Run runs the IntcodeComputer's program
 func (computer *IntcodeComputer) Run(inputs *[]int) error {
 	computer.copyMemory()
-	computer.output = []int{}
+	computer.Output = []int{}
 	computer.instructionPtr = 0
 
 	instruction, parameters, err := computer.parseNextInstruction()
@@ -347,7 +347,7 @@ func NewComputer(initMemory []int, instructions ...*Instruction) (IntcodeCompute
 		initMemory: initMemory,
 		memory: make([]int, len(initMemory)),
 		instructionPtr: 0,
-		output: []int{},
+		Output: []int{},
 		hasIncremented: false,
 	}
 
@@ -410,7 +410,7 @@ func Solve() {
 		return 
 	}
 
-	fmt.Printf("first computer output = %v\n", computer1.output)
+	fmt.Printf("first computer output = %v\n", computer1.Output)
 
 	computer2, err := NewComputer(initMemory, &Add, &Multiply, &Input, &Output, &JumpIfTrue, &JumpIfFalse, &LessThan, &Equals, &End)
 	if err != nil {
@@ -428,5 +428,5 @@ func Solve() {
 		return 
 	}
 
-	fmt.Printf("second computer output = %v\n", computer2.output)
+	fmt.Printf("second computer output = %v\n", computer2.Output)
 }
