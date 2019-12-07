@@ -21,10 +21,10 @@ type Parameter struct {
 	value, mode int
 }
 
-func (parameter *Parameter) getValue(memory *[]int) int {
+func (parameter *Parameter) getValue(memory []int) int {
 	switch parameter.mode {
 	case positionMode:
-		return (*memory)[parameter.value]
+		return memory[parameter.value]
 	case immediateMode:
 		return parameter.value
 	default:
@@ -49,17 +49,18 @@ func createParameters(values, modes []int) ([]Parameter, error) {
 // Instruction is used by an IntcodeComputer to perform an instruction
 type Instruction struct {
 	opCode, numValues int
-	op func(*[]int, int, []Parameter) error
+	op func(*IntcodeComputer, int, []Parameter) error
+	doesJump bool
 }
 
-// Execute is a fuck
-func (instruction *Instruction) Execute(memory *[]int, input int, parameters ...Parameter) error {
+// Execute runs an instruction's operation on the given computer
+func (instruction *Instruction) Execute(computer *IntcodeComputer, input int, parameters ...Parameter) error {
 	if len(parameters) != instruction.numValues - 1 {
 		errorMessage := fmt.Sprintf("instruction opcode %d incorrectly configured: bad numValues", instruction.opCode)
 		return errors.New(errorMessage)
 	}
 
-	err := instruction.op(memory, input, parameters)
+	err := instruction.op(computer, input, parameters)
 	if err != nil {
 		errorMessage := fmt.Sprintf("opcode %d failed: %v", instruction.opCode, err)
 		return errors.New(errorMessage)
@@ -68,42 +69,62 @@ func (instruction *Instruction) Execute(memory *[]int, input int, parameters ...
 	return nil
 }
 
-func instructionAdd(memory *[]int, input int, parameters []Parameter) error {
+func instructionAdd(computer *IntcodeComputer, input int, parameters []Parameter) error {
 	if parameters[2].mode == immediateMode {
 		return errors.New("write parameter cannot be in immediate mode")
 	}
 
-	sum := parameters[0].getValue(memory) + parameters[1].getValue(memory)
-	(*memory)[parameters[2].value] = sum
+	sum := parameters[0].getValue(computer.memory) + parameters[1].getValue(computer.memory)
+	computer.memory[parameters[2].value] = sum
 	return nil
 }
 
-func instructionMultiply(memory *[]int, input int, parameters []Parameter) error {
+func instructionMultiply(computer *IntcodeComputer, input int, parameters []Parameter) error {
 	if parameters[2].mode == immediateMode {
 		return errors.New("write parameter cannot be in immediate mode")
 	}
 
-	product := parameters[0].getValue(memory) * parameters[1].getValue(memory)
-	(*memory)[parameters[2].value] = product
+	product := parameters[0].getValue(computer.memory) * parameters[1].getValue(computer.memory)
+	computer.memory[parameters[2].value] = product
 	return nil
 }
 
-func instructionInput(memory *[]int, input int, parameters []Parameter) error {
+func instructionInput(computer *IntcodeComputer, input int, parameters []Parameter) error {
 	if parameters[0].mode == immediateMode {
 		return errors.New("write parameter cannot be in immediate mode")
 	}
 
-	(*memory)[parameters[0].value] = input
+	computer.memory[parameters[0].value] = input
 	return nil
 }
 
-func instructionOutput(memory *[]int, input int, parameters []Parameter) error {
-	output := parameters[0].getValue(memory)
+func instructionOutput(computer *IntcodeComputer, input int, parameters []Parameter) error {
+	output := parameters[0].getValue(computer.memory)
 	fmt.Println(output)
 	return nil
 }
 
-func instructionEnd(memory *[]int, input int, parameters []Parameter) error {
+func instructionJumpIfTrue(computer *IntcodeComputer, input int, parameters []Parameter) error {
+	if parameters[0].getValue(computer.memory) != 0 {
+		// set instruction pointer to value of second parameter
+	}
+
+	return nil
+}
+
+func instructionJumpIfFalse(computer *IntcodeComputer, input int, parameters []Parameter) error {
+	return nil
+}
+
+func instructionLessThan(computer *IntcodeComputer, input int, parameters []Parameter) error {
+	return nil
+}
+
+func instructionEquals(computer *IntcodeComputer, input int, parameters []Parameter) error {
+	return nil
+}
+
+func instructionEnd(computer *IntcodeComputer, input int, parameters []Parameter) error {
 	return nil
 }
 
@@ -112,6 +133,7 @@ var Add = Instruction {
 	opCode: 1,
 	op: instructionAdd,
 	numValues: 4,
+	doesJump: false,
 }
 
 // Multiply is an instruction that multiplies two elements together
@@ -119,6 +141,7 @@ var Multiply = Instruction {
 	opCode: 2,
 	op: instructionMultiply,
 	numValues: 4,
+	doesJump: false,
 }
 
 // Input is an instruction that takes input and saves it to a memory location
@@ -126,6 +149,7 @@ var Input = Instruction {
 	opCode: 3,
 	op: instructionInput,
 	numValues: 2,
+	doesJump: false,
 }
 
 // Output is an instruction that writes output from given memory location
@@ -133,6 +157,7 @@ var Output = Instruction {
 	opCode: 4,
 	op: instructionOutput,
 	numValues: 2,
+	doesJump: false,
 }
 
 // End is an instruction that ends the program
@@ -140,6 +165,7 @@ var End = Instruction {
 	opCode: EndCode,
 	op: instructionEnd,
 	numValues: 1,
+	doesJump: false,
 }
 
 // IntcodeComputer runs an intcode program
@@ -155,8 +181,10 @@ func (computer *IntcodeComputer) AddInstruction(in *Instruction) {
 	computer.instructions[in.opCode] = in
 }
 
-func (computer *IntcodeComputer) parseParameters(numValues int) []int {
-	defer computer.incrementBy(numValues)
+func (computer *IntcodeComputer) parseParameters(numValues int, doIncrement bool) []int {
+	if doIncrement {
+		defer computer.incrementBy(numValues)
+	}
 	return computer.memory[computer.instructionPtr + 1:computer.instructionPtr + numValues]
 }
 
@@ -175,7 +203,7 @@ func (computer *IntcodeComputer) parseNextInstruction() (*Instruction, []Paramet
 	modeCode, opCode := splitCode(fullCode)
 
 	if instruction, ok := computer.instructions[opCode]; ok {
-		values := computer.parseParameters(instruction.numValues)
+		values := computer.parseParameters(instruction.numValues, !instruction.doesJump)
 		modes, err := parseModes(opCode, modeCode, instruction.numValues)
 		if err != nil {
 			return instruction, []Parameter{}, err
@@ -236,7 +264,7 @@ func (computer *IntcodeComputer) Run(input int) error {
 			return nil
 		}
 
-		instruction.Execute(&computer.memory, input, parameters...)
+		instruction.Execute(computer, input, parameters...)
 
 		instruction, parameters, err = computer.parseNextInstruction()
 		if err != nil {
