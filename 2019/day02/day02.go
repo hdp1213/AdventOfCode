@@ -13,41 +13,45 @@ import (
 
 const end = 99
 
-type instruction struct {
+// Instruction is used by an IntcodeComputer to perform an instruction
+type Instruction struct {
 	opCode int
 	op func([]int, int, ...int) int
 	numParams int
 }
 
-type intcodeComputer struct {
+// IntcodeComputer runs an intcode program
+type IntcodeComputer struct {
 	initMemory []int
 	memory []int
 	instructionPtr int
-	instructions map[int]*instruction
+	instructions map[int]*Instruction
 	output int
 }
 
-func (computer *intcodeComputer) addInstruction(in *instruction) {
+// AddInstruction adds an Instruction to an IntcodeComputer
+func (computer *IntcodeComputer) AddInstruction(in *Instruction) {
 	computer.instructions[in.opCode] = in
 }
 
-func (computer *intcodeComputer) ParseParameters(numParams int) []int {
-	defer computer.IncrementBy(numParams)
+func (computer *IntcodeComputer) parseParameters(numParams int) []int {
+	defer computer.incrementBy(numParams)
 	return computer.memory[computer.instructionPtr + 1:computer.instructionPtr + numParams]
 }
 
-func (computer *intcodeComputer) IncrementBy(value int) {
+func (computer *IntcodeComputer) incrementBy(value int) {
 	computer.instructionPtr += value
 }
 
-func (computer *intcodeComputer) CopyMemory() {
+func (computer *IntcodeComputer) copyMemory() {
 	for i, code := range computer.initMemory {
 		computer.memory[i] = code
 	}
 }
 
-func (computer *intcodeComputer) Run() error {
-	computer.CopyMemory()
+// Run runs the IntcodeComputer's program
+func (computer *IntcodeComputer) Run() error {
+	computer.copyMemory()
 	computer.instructionPtr = 0
 	code := computer.memory[0]
 
@@ -62,7 +66,7 @@ func (computer *intcodeComputer) Run() error {
 		}
 
 		if instruction, ok := computer.instructions[code]; ok {
-			parameters := computer.ParseParameters(instruction.numParams)
+			parameters := computer.parseParameters(instruction.numParams)
 			result := instruction.op(computer.memory, instruction.numParams, parameters...)
 			computer.memory[parameters[2]] = result
 		}
@@ -71,7 +75,8 @@ func (computer *intcodeComputer) Run() error {
 	}
 }
 
-func readIntcode(r io.Reader) ([]int, error) {
+// ReadIntcode reads an intcode from a reader struct I guess
+func ReadIntcode(r io.Reader) ([]int, error) {
 	scanner := bufio.NewScanner(r)
 	onComma := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		for i := 0; i < len(data); i++ {
@@ -103,18 +108,19 @@ func readIntcode(r io.Reader) ([]int, error) {
 	return result, scanner.Err()
 }
 
-func newComputer(initMemory []int, instructions ...*instruction) (intcodeComputer, error) {
-	computer := intcodeComputer {
+// NewComputer initialises a new IntcodeComputer
+func NewComputer(initMemory []int, instructions ...*Instruction) (IntcodeComputer, error) {
+	computer := IntcodeComputer {
 		initMemory: initMemory,
 		memory: make([]int, len(initMemory)),
 		instructionPtr: 0,
 		output: -1,
 	}
 
-	computer.instructions = make(map[int]*instruction, len(instructions))
+	computer.instructions = make(map[int]*Instruction, len(instructions))
 
 	for _, instruction := range instructions {
-		computer.addInstruction(instruction)
+		computer.AddInstruction(instruction)
 	}
 
 	return computer, nil
@@ -140,7 +146,20 @@ func instructionMultiply(memory []int, numParams int, pointers ...int) int {
 	return total
 }
 
-func printIntcode(memory []int) {
+var add = Instruction {
+	opCode: 1,
+	op: instructionAdd,
+	numParams: 4,
+}
+
+var multiply = Instruction {
+	opCode: 2,
+	op: instructionMultiply,
+	numParams: 4,
+}
+
+// PrintIntcode prints the intcode to stdout, yay!
+func PrintIntcode(memory []int) {
 	for _, code := range memory {
 		fmt.Printf("%d,", code)
 	}
@@ -162,31 +181,18 @@ func Solve() {
 		return
 	}
 
-	initMemory, err := readIntcode(file)
+	initMemory, err := ReadIntcode(file)
 	file.Close()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to read intcode")
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	file.Close()
 
 	initMemory[1] = 12
 	initMemory[2] = 2
 
-	add := instruction {
-		opCode: 1,
-		op: instructionAdd,
-		numParams: 4,
-	}
-
-	multiply := instruction {
-		opCode: 2,
-		op: instructionMultiply,
-		numParams: 4,
-	}
-
-	computer, err := newComputer(initMemory, &add, &multiply)
+	computer, err := NewComputer(initMemory, &add, &multiply)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "computer failed to initialise")
 		fmt.Fprintln(os.Stderr, err)
