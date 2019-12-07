@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// TestSmallPaths does an in-depth test of the worked example
 func TestSmallPaths(t *testing.T) {
 	firstPath := "R8,U5,L5,D3"
 	secondPath := "U7,R6,D4,L4"
@@ -48,6 +49,7 @@ func TestSmallPaths(t *testing.T) {
 	}
 }
 
+// TestSmallPathsFlipped90 is the same as TestSmallPaths but flipped 90 degrees
 func TestSmallPathsFlipped90(t *testing.T) {
 	firstPath := "U8,L5,D5,R3"
 	secondPath := "L7,U6,R4,D4"
@@ -86,6 +88,7 @@ func TestSmallPathsFlipped90(t *testing.T) {
 	}
 }
 
+// TestSmallPathsFlipped180 is the same as TestSmallPaths but flipped 180 degrees
 func TestSmallPathsFlipped180(t *testing.T) {
 	firstPath := "L8,D5,R5,U3"
 	secondPath := "D7,L6,U4,R4"
@@ -124,6 +127,7 @@ func TestSmallPathsFlipped180(t *testing.T) {
 	}
 }
 
+// TestSmallPathsFlipped270 is the same as TestSmallPaths but flipped 270 degrees
 func TestSmallPathsFlipped270(t *testing.T) {
 	firstPath := "D8,R5,U5,L3"
 	secondPath := "R7,D6,L4,U4"
@@ -162,6 +166,7 @@ func TestSmallPathsFlipped270(t *testing.T) {
 	}
 }
 
+// TestFirstMediumPaths tests the first non-worked example
 func TestFirstMediumPaths(t *testing.T) {
 	firstPath := "R75,D30,R83,U83,L12,D49,R71,U7,L72"
 	secondPath := "U62,R66,U55,R34,D71,R55,D58,R83"
@@ -185,6 +190,7 @@ func TestFirstMediumPaths(t *testing.T) {
 	}
 }
 
+// TestSecondMediumPaths tests the second non-worked example
 func TestSecondMediumPaths(t *testing.T) {
 	firstPath := "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
 	secondPath := "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
@@ -208,6 +214,7 @@ func TestSecondMediumPaths(t *testing.T) {
 	}
 }
 
+// TestMultipleIntersections tests location of multiple intersections along one line segment
 func TestMultipleIntersections(t *testing.T) {
 	firstPath := "U5,R50"
 	secondPath := "R10,U10,R10,D10,R10,U10,R20"
@@ -229,6 +236,7 @@ func TestMultipleIntersections(t *testing.T) {
 	}
 }
 
+// TestElbowIntersection tests intersection of two wires touching by only their bend
 func TestElbowIntersection(t *testing.T) {
 	firstPath := "R5,U10,R10"
 	secondPath := "U10,R5,U2"
@@ -262,6 +270,7 @@ func TestElbowIntersection(t *testing.T) {
 	}
 }
 
+// TestOverlapIntersection tests non-standard case of two wires overlapping
 func TestOverlapIntersection(t *testing.T) {
 	firstPath := "D2,R10,U7"
 	secondPath := "R10,U2,R2"
@@ -301,6 +310,7 @@ func TestOverlapIntersection(t *testing.T) {
 	}
 }
 
+// TestNoIntersectionHorizontal tests non-intersection of two line segments, first horizontal
 func TestNoIntersectionHorizontal(t *testing.T) {
 	segment1, err := newLineSegment(point{x: 0, y: 0}, point{x: 10, y: 0})
 	if err != nil {
@@ -323,6 +333,7 @@ func TestNoIntersectionHorizontal(t *testing.T) {
 	}
 }
 
+// TestIntersectionHorizontal tests intersection of two line segments, first horizontal
 func TestIntersectionHorizontal(t *testing.T) {
 	segment1, err := newLineSegment(point{x: 0, y: 0}, point{x: 10, y: 0})
 	if err != nil {
@@ -347,6 +358,7 @@ func TestIntersectionHorizontal(t *testing.T) {
 	}
 }
 
+// TestNoIntersectionVertical tests non-intersection of two line segments, first vertical
 func TestNoIntersectionVertical(t *testing.T) {
 	segment1, err := newLineSegment(point{x: 0, y: 0}, point{x: 0, y: 10})
 	if err != nil {
@@ -369,6 +381,7 @@ func TestNoIntersectionVertical(t *testing.T) {
 	}
 }
 
+// TestIntersectionVertical tests intersection of two line segments, first vertical
 func TestIntersectionVertical(t *testing.T) {
 	segment1, err := newLineSegment(point{x: 0, y: 0}, point{x: 0, y: 10})
 	if err != nil {
@@ -393,6 +406,7 @@ func TestIntersectionVertical(t *testing.T) {
 	}
 }
 
+// TestGetDistanceExact tests getting wire distance to the point where the wire ends
 func TestGetDistanceExact(t *testing.T) {
 	path := "R4,U3"
 	point := point{x: 4, y: 3}
@@ -409,6 +423,7 @@ func TestGetDistanceExact(t *testing.T) {
 	}
 }
 
+// TestGetDistancePartial tests getting wire distance to a point on the last segment
 func TestGetDistancePartial(t *testing.T) {
 	path := "R4,U10"
 	point := point{x: 4, y: 3}
@@ -425,6 +440,7 @@ func TestGetDistancePartial(t *testing.T) {
 	}
 }
 
+// TestGetDistanceOvershoot tests getting wire distance to a point on a segment that is not the last
 func TestGetDistanceOvershoot(t *testing.T) {
 	path := "R4,U10,L3,D2"
 	point := point{x: 4, y: 3}
