@@ -22,8 +22,7 @@ const (
 )
 
 type point struct {
-	x int
-	y int
+	x, y int
 }
 
 func (point *point) manhattanDistance() int {
@@ -42,10 +41,8 @@ func (points pointArray) contains(testPoint point) bool {
 }
 
 type lineSegment struct {
-	start point
-	end point
-	orientation int
-	direction int
+	start, end point
+	orientation, direction int
 }
 
 func (segment lineSegment) length() int {
@@ -61,6 +58,40 @@ func (segment lineSegment) distanceTo(point point) int {
 	default:
 		return -1
 	}
+}
+
+func newLineSegment(start, end point) (lineSegment, error) {
+	direction, orientation := -1, -1
+
+	if start.x == end.x {
+		orientation = vertical
+
+		if start.y <= end.y {
+			direction = positive
+		} else {
+			direction = negative
+		}
+
+	} else {
+		if start.y == end.y {
+			orientation = horizontal
+
+			if start.x <= end.x {
+				direction = positive
+			} else {
+				direction = negative
+			}
+		} else {
+			return lineSegment{}, errors.New("Failed to make new line segment")
+		}
+	}
+
+	return lineSegment {
+		start: start,
+		end: end,
+		orientation: orientation,
+		direction: direction,
+	}, nil
 }
 
 func readWirePaths(r io.Reader) ([]string, error) {
@@ -186,7 +217,7 @@ func doesIntersectPoint(segment lineSegment, point point) bool {
 	return false
 }
 
-func doesIntersect(seg1 lineSegment, seg2 lineSegment) (bool, pointArray) {
+func doesIntersect(seg1, seg2 lineSegment) (bool, pointArray) {
 	if seg1.orientation == seg2.orientation {
 		var intersectionPoints pointArray
 
@@ -291,7 +322,7 @@ func intersect(startCoord, endCoord, direction, intersectCoord int) bool {
 	}
 }
 
-func findIntersections(firstWire []lineSegment, secondWire []lineSegment) pointArray {
+func findIntersections(firstWire, secondWire []lineSegment) pointArray {
 	var allIntersections pointArray
 
 	for _, segment := range firstWire {
@@ -378,7 +409,7 @@ func abs(a int) int {
 	return a
 }
 
-func findClosestManhattanIntersection(firstWirePath string, secondWirePath string) (int, error) {
+func findClosestManhattanIntersection(firstWirePath, secondWirePath string) (int, error) {
 	firstWire, err := processWirePath(firstWirePath)
 	if err != nil {
 		return 0, err
@@ -451,38 +482,4 @@ func Solve() {
 	}
 
 	fmt.Printf("found closest wire distance of %d\n", wireDistance)
-}
-
-func newLineSegment(start point, end point) (lineSegment, error) {
-	direction, orientation := -1, -1
-
-	if start.x == end.x {
-		orientation = vertical
-
-		if start.y <= end.y {
-			direction = positive
-		} else {
-			direction = negative
-		}
-
-	} else {
-		if start.y == end.y {
-			orientation = horizontal
-
-			if start.x <= end.x {
-				direction = positive
-			} else {
-				direction = negative
-			}
-		} else {
-			return lineSegment{}, errors.New("aw sausages")
-		}
-	}
-
-	return lineSegment {
-		start: start,
-		end: end,
-		orientation: orientation,
-		direction: direction,
-	}, nil
 }
