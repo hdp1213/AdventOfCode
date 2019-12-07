@@ -34,6 +34,39 @@ func validateRecursive(x, prevDigit int, hasSameDigit bool) bool {
 	return hasSameDigit
 }
 
+func validateFurther(code int) bool {
+	return validateFurtherRecursive(code, 10, map[int]int{})
+}
+
+func validateFurtherRecursive(x, prevDigit int, groupSizes map[int]int) bool {
+	const factor = 10
+	div := x / factor
+	digit := x - div * factor
+
+	if digit > prevDigit {
+		return false
+	}
+
+	if digit == prevDigit {
+		if _, ok := groupSizes[digit]; ok {
+			groupSizes[digit]++
+		} else {
+			groupSizes[digit] = 2
+		}
+	}
+
+	if div > 0 {
+		return validateFurtherRecursive(div, digit, groupSizes)
+	}
+
+	for _, count := range groupSizes {
+		if count == 2 {
+			return true
+		}
+	}
+
+	return false
+}
 
 func readRange(r io.Reader) (int, int, error) {
 	data, err := ioutil.ReadAll(r)
@@ -84,12 +117,17 @@ func Solve() {
 		return
 	}
 
-	totalValidCodes := 0
+	totalValidCodes, totalFurtherValidCodes := 0, 0
 	for code := a; code <= b; code++ {
 		if validate(code) {
 			totalValidCodes++
 		}
+
+		if validateFurther(code) {
+			totalFurtherValidCodes++
+		}
 	}
 
 	fmt.Printf("total valid codes found in [%d,%d] = %d\n", a, b, totalValidCodes)
+	fmt.Printf("total further valid codes found in [%d,%d] = %d\n", a, b, totalFurtherValidCodes)
 }
