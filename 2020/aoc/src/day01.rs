@@ -7,12 +7,12 @@ use std::collections::HashSet;
 // store the difference of number and total in first group, store only the number in second group
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
-fn read_file(file_name: &str) -> Lines<BufReader<File>> {
+pub fn read_file(file_name: &str) -> Lines<BufReader<File>> {
   let reader = BufReader::new(File::open(file_name).expect("Cannot open file"));
   reader.lines()
 }
 
-fn main() {
+pub fn solve_day01_part1() {
   let total = 2020;
   let lines = read_file("input/day01");
 
