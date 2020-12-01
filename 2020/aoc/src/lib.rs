@@ -1,5 +1,6 @@
 use std::error::Error;
 
+mod utils;
 mod day01;
 
 pub struct Config {
@@ -11,6 +12,7 @@ impl Config {
     if args.len() < 2 {
       return Err("not enough arguments")
     }
+
     let day = args[1].clone().parse::<i32>().expect("invalid day");
     Ok(Config { day })
   }
@@ -18,7 +20,7 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   if config.day == 1 {
-    day01::solve_day01_part1()
+    day01::solve_part1()
   }
 
   Ok(())

@@ -1,20 +1,15 @@
-use std::io::{BufRead, BufReader, Lines};
-use std::fs::File;
 use std::collections::HashSet;
+
+use crate::utils;
 
 // parse numbers from string
 // split numbers into two groups: ones <= to half the total, and ones > half the total
 // store the difference of number and total in first group, store only the number in second group
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
-pub fn read_file(file_name: &str) -> Lines<BufReader<File>> {
-  let reader = BufReader::new(File::open(file_name).expect("Cannot open file"));
-  reader.lines()
-}
-
-pub fn solve_day01_part1() {
+pub fn solve_part1() {
   let total = 2020;
-  let lines = read_file("input/day01");
+  let lines = utils::read_file_lines("input/day01");
 
   let half_total = total / 2;
   let mut lower_numbers = HashSet::new();
