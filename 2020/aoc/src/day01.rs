@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::error::Error;
 
 use crate::utils;
 
@@ -7,9 +8,9 @@ use crate::utils;
 // store the difference of number and total in first group, store only the number in second group
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
-pub fn solve_part1() {
+pub fn solve_part1() -> Result<(), Box<dyn Error>> {
   let total = 2020;
-  let lines = utils::read_file_lines("input/day01");
+  let lines = utils::read_file_lines("input/day01")?;
 
   let half_total = total / 2;
   let mut lower_numbers = HashSet::new();
@@ -38,4 +39,6 @@ pub fn solve_part1() {
   for number in lower_numbers.intersection(&higher_numbers) {
     println!("{}", number * (total - number));
   }
+
+  Ok(())
 }

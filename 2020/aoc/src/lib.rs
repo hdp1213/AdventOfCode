@@ -20,7 +20,9 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   if config.day == 1 {
-    day01::solve_part1()
+    if let Err(e) = day01::solve_part1() {
+        return Err(e);
+    }
   }
 
   Ok(())
