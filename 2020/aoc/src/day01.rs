@@ -17,16 +17,7 @@ pub fn solve_part1() -> Result<(), Box<dyn Error>> {
     let mut higher_numbers = HashSet::new();
 
     for line in lines {
-        if !line.is_ok() {
-            continue;
-        }
-
-        let parse_result = line.unwrap().parse::<i32>();
-        if !parse_result.is_ok() {
-            continue;
-        }
-
-        let number = parse_result.unwrap();
+        let number = line?.parse::<i32>()?;
 
         if number <= half_total {
             lower_numbers.insert(total - number);
