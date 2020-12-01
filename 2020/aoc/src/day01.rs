@@ -8,9 +8,15 @@ use crate::utils;
 // store the difference of number and total in first group, store only the number in second group
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
-pub fn solve_part1() -> Result<(), Box<dyn Error>> {
+pub async fn solve_part1() -> Result<(), Box<dyn Error>> {
+    let day = 1;
+    utils::load_input(day).await?;
+    let input_file = utils::input_dir().join(format!("day{:02}", day));
+
+    println!("loading input");
+    let lines = utils::read_file_lines(input_file)?;
+
     let total = 2020;
-    let lines = utils::read_file_lines("input/day01")?;
 
     let half_total = total / 2;
     let mut lower_numbers = HashSet::new();
