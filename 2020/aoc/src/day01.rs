@@ -9,36 +9,35 @@ use crate::utils;
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
 pub fn solve_part1() -> Result<(), Box<dyn Error>> {
-  let total = 2020;
-  let lines = utils::read_file_lines("input/day01")?;
+    let total = 2020;
+    let lines = utils::read_file_lines("input/day01")?;
 
-  let half_total = total / 2;
-  let mut lower_numbers = HashSet::new();
-  let mut higher_numbers = HashSet::new();
+    let half_total = total / 2;
+    let mut lower_numbers = HashSet::new();
+    let mut higher_numbers = HashSet::new();
 
-  for line in lines {
-    if !line.is_ok() {
-      continue;
+    for line in lines {
+        if !line.is_ok() {
+            continue;
+        }
+
+        let parse_result = line.unwrap().parse::<i32>();
+        if !parse_result.is_ok() {
+            continue;
+        }
+
+        let number = parse_result.unwrap();
+
+        if number <= half_total {
+            lower_numbers.insert(total - number);
+        } else if number > half_total {
+            higher_numbers.insert(number);
+        }
     }
 
-    let parse_result = line.unwrap().parse::<i32>();
-    if !parse_result.is_ok() {
-      continue;
+    for number in lower_numbers.intersection(&higher_numbers) {
+        println!("{}", number * (total - number));
     }
 
-    let number = parse_result.unwrap();
-
-    if number <= half_total {
-      lower_numbers.insert(total - number);
-    }
-    else if number > half_total {
-      higher_numbers.insert(number);
-    }
-  }
-
-  for number in lower_numbers.intersection(&higher_numbers) {
-    println!("{}", number * (total - number));
-  }
-
-  Ok(())
+    Ok(())
 }
