@@ -1,7 +1,8 @@
 use std::error::Error;
 
-mod day01;
 mod utils;
+
+mod day01;
 
 pub struct Args {
     day: i32,
@@ -20,7 +21,7 @@ impl Args {
 
 pub async fn run(config: Args) -> Result<(), Box<dyn Error>> {
     if config.day == 1 {
-        day01::solve_part1().await?;
+        day01::solve().await?;
     }
 
     Ok(())
