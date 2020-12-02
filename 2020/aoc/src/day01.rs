@@ -23,13 +23,16 @@ pub async fn solve() -> Result<(), Box<dyn Error>> {
         numbers.push(line?.parse::<i32>()?);
     }
 
-    part1(&numbers, total)?;
-    part2(&numbers, total)?;
+    let (a1, a2) = part1(&numbers, total)?;
+    println!("{} * {} = {}", a1, a2, a1 * a2);
+
+    let (b1, b2, b3) = part2(&numbers, total)?;
+    println!("{} * {} * {} = {}", b1, b2, b3, b1 * b2 * b3);
 
     Ok(())
 }
 
-fn part1(input: &Vec<i32>, total: i32) -> Result<(), Box<dyn Error>> {
+fn part1(input: &Vec<i32>, total: i32) -> Result<(i32, i32), Box<dyn Error>> {
     let half_total = total / 2;
 
     let mut lower_numbers: HashSet<i32> = HashSet::new();
@@ -45,13 +48,13 @@ fn part1(input: &Vec<i32>, total: i32) -> Result<(), Box<dyn Error>> {
 
     for &number in lower_numbers.intersection(&higher_numbers) {
         let (a, b) = (number, total - number);
-        println!("{} * {} = {}", a, b, a * b);
+        return Ok((a, b));
     }
 
-    Ok(())
+    Ok((0, 0))
 }
 
-fn part2(input: &Vec<i32>, total: i32) -> Result<(), Box<dyn Error>> {
+fn part2(input: &Vec<i32>, total: i32) -> Result<(i32, i32, i32), Box<dyn Error>> {
     let half_total = total / 2;
 
     let mut lower_numbers: HashSet<i32> = HashSet::new();
@@ -73,7 +76,7 @@ fn part2(input: &Vec<i32>, total: i32) -> Result<(), Box<dyn Error>> {
 
             // Also add the pair's sum
             let sub_sum = a + b;
-            tuples.insert(sub_sum, (a, b, total - sub_sum));
+            tuples.insert(sub_sum, sort_triplet((a, b, total - sub_sum)));
 
             if sub_sum <= half_total {
                 lower_numbers.insert(total - sub_sum);
@@ -86,9 +89,43 @@ fn part2(input: &Vec<i32>, total: i32) -> Result<(), Box<dyn Error>> {
     for &number in lower_numbers.intersection(&higher_numbers) {
         if tuples.contains_key(&number) {
             let (a, b, c) = tuples[&number];
-            println!("{} * {} * {} = {}", a, b, c, a * b * c);
+            return Ok((a, b, c));
         }
     }
 
-    Ok(())
+    Ok((0, 0, 0))
+}
+
+fn sort_triplet(tuple: (i32, i32, i32)) -> (i32, i32, i32) {
+    let mut vector = vec![tuple.0, tuple.1, tuple.2];
+    vector.sort();
+    (vector[0], vector[1], vector[2])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part1_pair_found() {
+        let input = vec![1721, 979, 366, 299, 675, 1456];
+        let total = 2020;
+
+        let (a, b) = part1(&input, total).unwrap();
+
+        assert_eq!(a, 1721);
+        assert_eq!(b, 299);
+    }
+
+    #[test]
+    fn part2_triplet_found() {
+        let input = vec![1721, 979, 366, 299, 675, 1456];
+        let total = 2020;
+
+        let (a, b, c) = part2(&input, total).unwrap();
+
+        assert_eq!(a, 366);
+        assert_eq!(b, 675);
+        assert_eq!(c, 979);
+    }
 }
