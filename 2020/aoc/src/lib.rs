@@ -1,8 +1,12 @@
 use std::error::Error;
 
+#[macro_use]
+extern crate lazy_static;
+
 mod utils;
 
 mod day01;
+mod day02;
 
 pub struct Args {
     day: i32,
@@ -22,6 +26,8 @@ impl Args {
 pub async fn run(config: Args) -> Result<(), Box<dyn Error>> {
     if config.day == 1 {
         day01::solve().await?;
+    } else if config.day == 2 {
+        day02::solve().await?;
     }
 
     Ok(())
