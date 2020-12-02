@@ -21,13 +21,16 @@ pub async fn solve() -> Result<(), Box<dyn Error>> {
     let valid_passwords = part1(&rules)?;
     println!("valid passwords: {}", valid_passwords);
 
+    let new_valid_passwords = part2(&rules)?;
+    println!("new valid passwords: {}", new_valid_passwords);
+
     Ok(())
 }
 
 #[derive(Debug)]
 struct PasswordRule {
-    min: i32,
-    max: i32,
+    num1: i32,
+    num2: i32,
     character: char,
     password: String,
 }
@@ -39,20 +42,22 @@ impl PasswordRule {
         }
 
         let caps = RE.captures(line).ok_or_else(|| "bad match")?;
-        let min = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
-        let max = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
+        let num1 = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
+        let num2 = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
         let character = string_to_char(caps.get(3).unwrap().as_str().to_string()).unwrap();
         let password = caps.get(4).unwrap().as_str().to_string();
 
         Ok(PasswordRule {
-            min,
-            max,
+            num1,
+            num2,
             character,
             password,
         })
     }
 
-    fn valid_password(&self) -> bool {
+    fn is_valid_password_old(&self) -> bool {
+        // Old rule assumes num1 and num2 are min and max values for
+        // character to appear under
         let mut num_matches: i32 = 0;
 
         for c in self.password.chars() {
@@ -61,7 +66,16 @@ impl PasswordRule {
             }
         }
 
-        (num_matches >= self.min) && (num_matches <= self.max)
+        (num_matches >= self.num1) && (num_matches <= self.num2)
+    }
+
+    fn is_valid_password_new(&self) -> bool {
+        // New rule assumes num1 and num2 are indices for character
+        // to appear exactly once at either index (XOR)
+        let ind1 = (self.num1 - 1) as usize;
+        let ind2 = (self.num2 - 1) as usize;
+        let chars: Vec<char> = self.password.chars().collect();
+        (chars[ind1] == self.character) ^ (chars[ind2] == self.character)
     }
 }
 
@@ -80,7 +94,21 @@ fn part1(input: &Vec<String>) -> Result<i32, Box<dyn Error>> {
     for line in input {
         let rule = PasswordRule::new(line)?;
 
-        if rule.valid_password() {
+        if rule.is_valid_password_old() {
+            valid_passwords += 1;
+        }
+    }
+
+    Ok(valid_passwords)
+}
+
+fn part2(input: &Vec<String>) -> Result<i32, Box<dyn Error>> {
+    let mut valid_passwords: i32 = 0;
+
+    for line in input {
+        let rule = PasswordRule::new(line)?;
+
+        if rule.is_valid_password_new() {
             valid_passwords += 1;
         }
     }
@@ -102,5 +130,17 @@ mod tests {
         let valid_passwords = part1(&input).unwrap();
 
         assert_eq!(valid_passwords, 2);
+    }
+
+    #[test]
+    fn part2_validate_passwords() {
+        let input = vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
+            .iter()
+            .map(|&s| String::from(s))
+            .collect();
+
+        let valid_passwords = part2(&input).unwrap();
+
+        assert_eq!(valid_passwords, 1);
     }
 }
