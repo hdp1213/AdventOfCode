@@ -20,6 +20,9 @@ pub async fn solve() -> Result<(), Box<dyn Error>> {
     let num_trees = part1(&map_lines)?;
     println!("number of trees for first pass: {}", num_trees);
 
+    let product = part2(&map_lines)?;
+    println!("product of routes: {}", product);
+
     Ok(())
 }
 
@@ -51,6 +54,27 @@ impl TreeMap {
             trees,
         })
     }
+
+    fn get_tree_collisions(&self, slope: (usize, usize)) -> usize {
+        let mut num_collisions: usize = 0;
+        let mut num_steps: usize = 0;
+
+        let mut i: usize = 0;
+        let mut j: usize;
+
+        while i < self.height {
+            i = slope.0 * num_steps;
+            j = (slope.1 * num_steps) % self.width;
+
+            if self.trees.contains(&(i, j)) {
+                num_collisions += 1;
+            }
+
+            num_steps += 1;
+        }
+
+        return num_collisions;
+    }
 }
 
 fn part1(input: &Vec<String>) -> Result<usize, Box<dyn Error>> {
@@ -68,6 +92,18 @@ fn part1(input: &Vec<String>) -> Result<usize, Box<dyn Error>> {
     return Ok(num_trees);
 }
 
+fn part2(input: &Vec<String>) -> Result<usize, Box<dyn Error>> {
+    let map = TreeMap::new(input)?;
+    let slopes = vec![(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)];
+    let mut product = 1;
+
+    for slope in slopes {
+        product *= map.get_tree_collisions(slope);
+    }
+
+    Ok(product)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,7 +116,6 @@ mod tests {
             .collect();
 
         let map = TreeMap::new(&input).unwrap();
-        println!("{:?}", map.trees);
 
         assert_eq!(map.height, 3);
         assert_eq!(map.width, 4);
@@ -88,6 +123,31 @@ mod tests {
         assert!(map.trees.contains(&(0, 2)));
         assert!(map.trees.contains(&(2, 0)));
         assert!(map.trees.contains(&(2, 2)));
+    }
+
+    #[test]
+    fn tree_map_collisions() {
+        let input = vec![
+            "..##.......",
+            "#...#...#..",
+            ".#....#..#.",
+            "..#.#...#.#",
+            ".#...##..#.",
+            "..#.##.....",
+            ".#.#.#....#",
+            ".#........#",
+            "#.##...#...",
+            "#...##....#",
+            ".#..#...#.#",
+        ]
+        .iter()
+        .map(|&s| String::from(s))
+        .collect();
+
+        let map = TreeMap::new(&input).unwrap();
+
+        let collisions = map.get_tree_collisions((1, 3));
+        assert_eq!(collisions, 7);
     }
 
     #[test]
@@ -112,5 +172,29 @@ mod tests {
         let num_trees = part1(&input).unwrap();
 
         assert_eq!(num_trees, 7);
+    }
+
+    #[test]
+    fn part2_product() {
+        let input = vec![
+            "..##.......",
+            "#...#...#..",
+            ".#....#..#.",
+            "..#.#...#.#",
+            ".#...##..#.",
+            "..#.##.....",
+            ".#.#.#....#",
+            ".#........#",
+            "#.##...#...",
+            "#...##....#",
+            ".#..#...#.#",
+        ]
+        .iter()
+        .map(|&s| String::from(s))
+        .collect();
+
+        let product = part2(&input).unwrap();
+
+        assert_eq!(product, 336);
     }
 }
