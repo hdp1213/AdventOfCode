@@ -5,18 +5,7 @@ use crate::utils;
 use regex::Regex;
 
 pub async fn solve() -> Result<(), Box<dyn Error>> {
-    let day: i32 = 2;
-    utils::load_input(day).await?;
-    let input_file = utils::input_dir().join(format!("day{:02}", day));
-
-    println!("loading input for day 02...");
-    let lines = utils::read_file_lines(input_file)?;
-
-    let mut rules = Vec::new();
-
-    for line in lines {
-        rules.push(line?);
-    }
+    let rules = utils::start_day(2, &(|l| l)).await?;
 
     let valid_passwords = part1(&rules)?;
     println!("valid passwords: {}", valid_passwords);

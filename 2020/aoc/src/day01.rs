@@ -9,19 +9,8 @@ use crate::utils;
 // if two numbers exist s.t. they sum to total, the intersection of these two sets will give the pair
 
 pub async fn solve() -> Result<(), Box<dyn Error>> {
-    let day: i32 = 1;
-    utils::load_input(day).await?;
-    let input_file = utils::input_dir().join(format!("day{:02}", day));
-
-    println!("loading input for day 01...");
-    let lines = utils::read_file_lines(input_file)?;
+    let numbers = utils::start_day(1, &(|l| l.parse::<i32>().unwrap())).await?;
     let total = 2020;
-
-    let mut numbers = Vec::new();
-
-    for line in lines {
-        numbers.push(line?.parse::<i32>()?);
-    }
 
     let (a1, a2) = part1(&numbers, total)?;
     println!("{} * {} = {}", a1, a2, a1 * a2);

@@ -5,16 +5,35 @@ use std::path::{Path, PathBuf};
 
 use reqwest::{header, Client};
 
-pub fn input_dir() -> &'static Path {
+pub async fn start_day<T>(
+    day: i32,
+    line_map: &dyn Fn(String) -> T,
+) -> Result<Vec<T>, Box<dyn Error>> {
+    load_input(day).await?;
+    let input_file = input_dir().join(format!("day{:02}", day));
+
+    println!("{}", format!("loading input for day {:02}...", day));
+    let lines = read_file_lines(input_file)?;
+
+    let mut input: Vec<T> = Vec::new();
+
+    for line in lines {
+        input.push(line_map(line?));
+    }
+
+    Ok(input)
+}
+
+fn input_dir() -> &'static Path {
     Path::new("input/")
 }
 
-pub fn read_file_lines(file_name: PathBuf) -> Result<Lines<BufReader<fs::File>>, Box<dyn Error>> {
+fn read_file_lines(file_name: PathBuf) -> Result<Lines<BufReader<fs::File>>, Box<dyn Error>> {
     let reader = BufReader::new(fs::File::open(file_name)?);
     Ok(reader.lines())
 }
 
-pub async fn load_input(day: i32) -> Result<(), Box<dyn Error>> {
+async fn load_input(day: i32) -> Result<(), Box<dyn Error>> {
     let output_file = input_dir().join(format!("day{:02}", day));
 
     if output_file.exists() {

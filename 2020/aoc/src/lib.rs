@@ -8,6 +8,7 @@ mod utils;
 mod day01;
 mod day02;
 mod day03;
+mod day04;
 
 pub struct Args {
     day: i32,
@@ -31,6 +32,8 @@ pub async fn run(config: Args) -> Result<(), Box<dyn Error>> {
         day02::solve().await?;
     } else if config.day == 3 {
         day03::solve().await?;
+    } else if config.day == 4 {
+        day04::solve().await?;
     }
 
     Ok(())

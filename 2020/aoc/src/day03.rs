@@ -4,18 +4,7 @@ use std::error::Error;
 use crate::utils;
 
 pub async fn solve() -> Result<(), Box<dyn Error>> {
-    let day: i32 = 3;
-    utils::load_input(day).await?;
-    let input_file = utils::input_dir().join(format!("day{:02}", day));
-
-    println!("loading input for day 03...");
-    let lines = utils::read_file_lines(input_file)?;
-
-    let mut map_lines = Vec::new();
-
-    for line in lines {
-        map_lines.push(line?);
-    }
+    let map_lines = utils::start_day(3, &(|l| l)).await?;
 
     let num_trees = part1(&map_lines)?;
     println!("number of trees for first pass: {}", num_trees);
